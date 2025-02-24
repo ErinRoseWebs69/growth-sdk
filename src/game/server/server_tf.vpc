@@ -63,6 +63,11 @@ $Project "Server (TF)"
 		$File	"trigger_area_capture.cpp"
 		$File	"trigger_area_capture.h"
 
+		$Folder "Portals"
+		{
+			$File	"portals\point_portal.cpp"
+		}
+
 		$Folder "Common"
 		{
 			$File	"$SRCDIR\common\protoutils.cpp"

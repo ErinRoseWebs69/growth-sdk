@@ -259,6 +259,43 @@ protected:
 	ViewCustomVisibility_t *m_pCustomVisibility;
 };
 
+//-----------------------------------------------------------------------------
+// 
+//-----------------------------------------------------------------------------
+class CBaseWorldView : public CRendering3dView
+{
+	DECLARE_CLASS(CBaseWorldView, CRendering3dView);
+protected:
+	CBaseWorldView(CViewRender* pMainView) : CRendering3dView(pMainView) {}
+
+	virtual bool	AdjustView(float waterHeight);
+
+	void			DrawSetup(float waterHeight, int flags, float waterZAdjust, int iForceViewLeaf = -1);
+	void			DrawExecute(float waterHeight, view_id_t viewID, float waterZAdjust);
+
+	virtual void	PushView(float waterHeight);
+	virtual void	PopView();
+
+	void			SSAO_DepthPass();
+	void			DrawDepthOfField();
+};
+
+//-----------------------------------------------------------------------------
+// Draws the scene when there's no water or only cheap water
+//-----------------------------------------------------------------------------
+class CSimpleWorldView : public CBaseWorldView
+{
+	DECLARE_CLASS(CSimpleWorldView, CBaseWorldView);
+public:
+	CSimpleWorldView(CViewRender* pMainView) : CBaseWorldView(pMainView) {}
+
+	void			Setup(const CViewSetup& view, int nClearFlags, bool bDrawSkybox, const VisibleFogVolumeInfo_t& fogInfo, const WaterRenderInfo_t& info, ViewCustomVisibility_t* pCustomVisibility = NULL);
+	void			Draw();
+
+private:
+	VisibleFogVolumeInfo_t m_fogInfo;
+
+};
 
 //-----------------------------------------------------------------------------
 // 
@@ -459,9 +496,10 @@ private:
 	void			ViewDrawScene_PortalStencil( const CViewSetup &view, ViewCustomVisibility_t *pCustomVisibility );
 	void			Draw3dSkyboxworld_Portal( const CViewSetup &view, int &nClearFlags, bool &bDrew3dSkybox, SkyboxVisibility_t &nSkyboxVisible, ITexture *pRenderTarget = NULL );
 #endif // PORTAL
-
+public:
 	// Determines what kind of water we're going to use
 	void			DetermineWaterRenderInfo( const VisibleFogVolumeInfo_t &fogVolumeInfo, WaterRenderInfo_t &info );
+private:
 
 	bool			UpdateRefractIfNeededByList( CUtlVector< IClientRenderable * > &list );
 	void			DrawRenderablesInList( CUtlVector< IClientRenderable * > &list, int flags = 0 );

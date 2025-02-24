@@ -1,0 +1,6 @@
+@include "base.fgd"
+
+@PointClass base(Targetname, Angles, Origin) = point_portal : "Point Portal"
+[
+    partner(target_destination) : "Partner" : : "The window which will be drawn from"
+]

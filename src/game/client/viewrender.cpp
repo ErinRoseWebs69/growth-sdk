@@ -62,6 +62,11 @@
 #include "portal_render_targets.h"
 #include "PortalRender.h"
 #endif
+
+#ifdef TF_CLIENT_DLL
+#include "portals/portalrendering.h"
+#endif
+
 #if defined( HL2_CLIENT_DLL ) || defined( CSTRIKE_DLL ) || defined( TF_CLIENT_DLL )
 #define USE_MONITORS
 #endif
@@ -465,45 +470,7 @@ private:
 	CMaterialReference m_TranslucentSingleColor;
 };
 
-//-----------------------------------------------------------------------------
-// 
-//-----------------------------------------------------------------------------
-class CBaseWorldView : public CRendering3dView
-{
-	DECLARE_CLASS( CBaseWorldView, CRendering3dView );
-protected:
-	CBaseWorldView(CViewRender *pMainView) : CRendering3dView( pMainView ) {}
-
-	virtual bool	AdjustView( float waterHeight );
-
-	void			DrawSetup( float waterHeight, int flags, float waterZAdjust, int iForceViewLeaf = -1 );
-	void			DrawExecute( float waterHeight, view_id_t viewID, float waterZAdjust );
-
-	virtual void	PushView( float waterHeight );
-	virtual void	PopView();
-
-	void			SSAO_DepthPass();
-	void			DrawDepthOfField();
-};
-
-
-//-----------------------------------------------------------------------------
-// Draws the scene when there's no water or only cheap water
-//-----------------------------------------------------------------------------
-class CSimpleWorldView : public CBaseWorldView
-{
-	DECLARE_CLASS( CSimpleWorldView, CBaseWorldView );
-public:
-	CSimpleWorldView(CViewRender *pMainView) : CBaseWorldView( pMainView ) {}
-
-	void			Setup( const CViewSetup &view, int nClearFlags, bool bDrawSkybox, const VisibleFogVolumeInfo_t &fogInfo, const WaterRenderInfo_t& info, ViewCustomVisibility_t *pCustomVisibility = NULL );
-	void			Draw();
-
-private: 
-	VisibleFogVolumeInfo_t m_fogInfo;
-
-};
-
+// looking for CSimpleWorldView or CBaseWorldView? Check viewrender.h
 
 //-----------------------------------------------------------------------------
 // Base class for scenes with water
@@ -4458,7 +4425,6 @@ void CRendering3dView::DrawNoZBufferTranslucentRenderables( void )
 }
 
 
-
 //-----------------------------------------------------------------------------
 // Renders all translucent world, entities, and detail objects in a particular set of leaves
 //-----------------------------------------------------------------------------
@@ -4524,6 +4490,10 @@ void CRendering3dView::DrawTranslucentRenderables( bool bInSkybox, bool bShadowD
 		}
 	}
 #else
+#ifdef TF_CLIENT_DLL
+	g_pPortalRendering->Render(m_pMainView);
+#endif
+
 	{
 		//opaques generally write depth, and translucents generally don't.
 		//So immediately after opaques are done is the best time to snap off the depth buffer to a texture.

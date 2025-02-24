@@ -68,6 +68,16 @@ $Project "Client (TF)"
 		$File	"$SRCDIR\game\shared\playerclass_info_parse.h"
 		$File	"$SRCDIR\game\shared\teamplay_round_timer.cpp"
 		$File	"$SRCDIR\game\shared\teamplay_round_timer.h"
+		
+		$Folder	"Portals"
+		{
+			$File	"portals\c_point_portal.cpp"
+			$File	"portals\c_point_portal.h"
+			$File	"portals\portalrendering.cpp"
+			$File	"portals\portalrendering.h"
+			$File	"portals\c_stencil.cpp"
+			$File	"portals\c_stencil.h"
+		}
 
 		$Folder "Common"
 		{
