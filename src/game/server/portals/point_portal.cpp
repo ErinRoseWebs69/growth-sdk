@@ -21,28 +21,27 @@ public:
 public:
 	string_t m_sPartnerName;
 	CNetworkHandle(CPointPortal, m_hPartner);
-	CNetworkVar(int, m_iHalfWidth);
-	CNetworkVar(int, m_iHalfHeight);
+	CNetworkVar(float, m_fHalfWidth);
+	CNetworkVar(float, m_fHalfHeight);
 };
-
-LINK_ENTITY_TO_CLASS(point_portal, CPointPortal);
 
 BEGIN_DATADESC(CPointPortal)
 DEFINE_KEYFIELD(m_sPartnerName, FIELD_STRING, "partner"),
-DEFINE_FIELD(m_hPartner, FIELD_EHANDLE),
-DEFINE_KEYFIELD(m_iHalfWidth, FIELD_INTEGER, "halfwidth"),
-DEFINE_KEYFIELD(m_iHalfHeight, FIELD_INTEGER, "halfheight"),
+//DEFINE_FIELD(m_hPartner, FIELD_EHANDLE),
+DEFINE_KEYFIELD(m_fHalfWidth, FIELD_FLOAT, "halfwidth"),
+DEFINE_KEYFIELD(m_fHalfHeight, FIELD_FLOAT, "halfheight"),
 END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST(CPointPortal, DT_PointPortal)
 SendPropEHandle(SENDINFO(m_hPartner)),
-SendPropInt(SENDINFO(m_iHalfWidth)),
-SendPropInt(SENDINFO(m_iHalfHeight))
+SendPropFloat(SENDINFO(m_fHalfWidth)),
+SendPropFloat(SENDINFO(m_fHalfHeight))
 END_SEND_TABLE()
+
+LINK_ENTITY_TO_CLASS(point_portal, CPointPortal);
 
 CPointPortal::CPointPortal()
 {
-
 }
 
 void CPointPortal::Activate(void)
@@ -53,4 +52,6 @@ void CPointPortal::Activate(void)
 	if (CPointPortal* mirror = dynamic_cast<CPointPortal*>(entity)) {
 		m_hPartner.Set(mirror);
 	}
+
+	this->DispatchUpdateTransmitState();
 }

@@ -10,7 +10,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-static ConVar r_max_stencil_recursion("r_max_stencil_recursion", "1", FCVAR_CLIENTDLL | FCVAR_DEVELOPMENTONLY, "(BROKEN) Shows portals through portals, if it worked properly");
+static ConVar r_max_stencil_recursion("r_max_stencil_recursion", "1", FCVAR_CLIENTDLL, "(BROKEN) Shows portals through portals, if it worked properly");
 static ConVar r_debug_portals("r_debug_portals", "0", FCVAR_CLIENTDLL, "Shows debug information about portals");
 
 static PortalRendering s_PortalRendering;
@@ -31,24 +31,44 @@ void PortalRendering::Render(CViewRender* view)
 		rotation[0][0] = -1.0f;
 		rotation[1][1] = -1.0f;
 
-		g_pStencilTool->SetupInitialStencilRendering(pRenderContext, m_iRecursionLevel);
+		C_BasePlayer* localPlayer = C_BasePlayer::GetLocalPlayer();
+		CSimpleWorldView* pClientView = new CSimpleWorldView(view);
+
+		if (m_iRecursionLevel == 0)
+			g_pStencilTool->SetupInitialStencilRendering(pRenderContext, m_iRecursionLevel);
 		for (int i = 0; i < m_vPortals.Size(); ++i) {
 			//const float forwardOffset = 0.1;
 			C_PointPortal* window = m_vPortals[i];
-			if (!window->HasPartner()) {
-				continue;
-			}
-			g_pStencilTool->SetStencilReferenceValue(pRenderContext, m_iRecursionLevel);
-			window->DrawStencil();
-			m_iRecursionLevel += 1;
-			g_pStencilTool->ClearDepthBuffer(pRenderContext, m_iRecursionLevel);
-
-			CViewSetup windowView = *viewSetup;
+			if (!window->HasPartner()) continue;
 
 			Vector myPos = window->GetAbsOrigin();
 			QAngle myAngles = window->GetAbsAngles();
 			Vector myFwd, myRht, myUp;
 			AngleVectors(myAngles, &myFwd, &myRht, &myUp);
+
+			Vector rExt = myPos + myRht * (window->m_fHalfWidth - 0.1);
+			Vector lExt = myPos - myRht * (window->m_fHalfWidth - 0.1);
+			Vector uExt = myPos + myUp * (window->m_fHalfHeight - 0.1);
+			Vector dExt = myPos - myUp * (window->m_fHalfHeight - 0.1);
+
+			if (!localPlayer->IsInFieldOfView(myPos) || !localPlayer->ComputeLOS(localPlayer->EyePosition(), myPos)) { // if the center is visible then its guaranteed the portal is visible
+				if (!localPlayer->IsInFieldOfView(rExt) &&
+					!localPlayer->IsInFieldOfView(lExt) &&
+					!localPlayer->IsInFieldOfView(uExt) &&
+					!localPlayer->IsInFieldOfView(dExt)) continue; // if none of the points are even in the field of view, why bother checking if its occluded?
+				if (!localPlayer->ComputeLOS(localPlayer->EyePosition(), lExt) &&
+					!localPlayer->ComputeLOS(localPlayer->EyePosition(), rExt) &&
+					!localPlayer->ComputeLOS(localPlayer->EyePosition(), uExt) &&
+					!localPlayer->ComputeLOS(localPlayer->EyePosition(), dExt)) continue; // this is an excuse not to do a depth hack that I can't figure out how to do
+			}
+
+			g_pStencilTool->SetStencilReferenceValue(pRenderContext, m_iRecursionLevel);
+			window->DrawStencil(false);
+			m_iRecursionLevel += 1;
+			g_pStencilTool->ClearDepthBuffer(pRenderContext, m_iRecursionLevel);
+
+			CViewSetup windowView = *viewSetup;
+
 			VMatrix myModel(
 				myFwd,
 				-myRht,
@@ -104,10 +124,9 @@ void PortalRendering::Render(CViewRender* view)
 			WaterRenderInfo_t waterInfo;
 			view->DetermineWaterRenderInfo(fogInfo, waterInfo);
 
-			CSimpleWorldView* pClientView = new CSimpleWorldView(view);
+			
 			pClientView->Setup(windowView, VIEW_CLEAR_OBEY_STENCIL, true, fogInfo, waterInfo, nullptr);
 			view->AddViewToScene(pClientView);
-			SafeRelease(pClientView);
 
 			render->PopView(view->GetFrustum());
 
@@ -121,6 +140,7 @@ void PortalRendering::Render(CViewRender* view)
 			m_iRecursionLevel -= 1;
 		}
 		pRenderContext->Flush(true);
+		SafeRelease(pClientView);
 	}
 }
 

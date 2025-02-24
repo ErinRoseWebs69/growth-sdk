@@ -7,13 +7,15 @@ LINK_ENTITY_TO_CLASS(point_portal, C_PointPortal);
 
 IMPLEMENT_CLIENTCLASS_DT(C_PointPortal, DT_PointPortal, CPointPortal)
 RecvPropEHandle(RECVINFO(m_hPartner)),
-RecvPropInt(RECVINFO(m_iHalfWidth)),
-RecvPropInt(RECVINFO(m_iHalfHeight))
+RecvPropFloat(RECVINFO(m_fHalfWidth)),
+RecvPropFloat(RECVINFO(m_fHalfHeight)),
 END_RECV_TABLE()
 
 C_PointPortal::C_PointPortal()
 {
 	g_pPortalRendering->Add(this);
+	this->SetRenderMode(kRenderNormal);
+	Msg("[PORTAL] %s: Created", this->GetDebugName());
 }
 
 C_PointPortal::~C_PointPortal()
@@ -24,7 +26,9 @@ C_PointPortal::~C_PointPortal()
 void C_PointPortal::SpawnClientEntity() 
 {
 	BaseClass::SpawnClientEntity();
-	DevMsg("Spawned Client Entity");
+}
+
+void C_PointPortal::Precache() {
 }
 
 bool C_PointPortal::HasPartner()
@@ -37,10 +41,11 @@ C_PointPortal* C_PointPortal::GetPartner()
 	return (C_PointPortal*)m_hPartner.Get();
 }
 
-void C_PointPortal::DrawStencil()
+void C_PointPortal::DrawStencil(bool fixDepth)
 {
-	float forwardOffset = 0.1;
+	float forwardOffset = fixDepth ? 0.0 : 0.1;
 	const IMaterial* pMaterial = materials->FindMaterial("", "", false); // literally just yoink an error texture, TODO: actually make this get a real material
+	// TODO: this needs to get a material that ONLY writes depth and not color.
 	// eventually you should be able to put a mask material on this, make real looking portals
 
 	CMatRenderContextPtr pRenderContext(materials);
@@ -59,10 +64,10 @@ void C_PointPortal::DrawStencil()
 	Vector ptCenter = this->GetAbsOrigin() + m_vForward * forwardOffset;
 
 	Vector verts[4];
-	verts[0] = ptCenter + (m_vRight * m_iHalfWidth) - (m_vUp * m_iHalfHeight);
-	verts[1] = ptCenter + (m_vRight * m_iHalfWidth) + (m_vUp * m_iHalfHeight);
-	verts[2] = ptCenter - (m_vRight * m_iHalfWidth) - (m_vUp * m_iHalfHeight);
-	verts[3] = ptCenter - (m_vRight * m_iHalfWidth) + (m_vUp * m_iHalfHeight);
+	verts[0] = ptCenter + (m_vRight * m_fHalfWidth) - (m_vUp * m_fHalfHeight);
+	verts[1] = ptCenter + (m_vRight * m_fHalfWidth) + (m_vUp * m_fHalfHeight);
+	verts[2] = ptCenter - (m_vRight * m_fHalfWidth) - (m_vUp * m_fHalfHeight);
+	verts[3] = ptCenter - (m_vRight * m_fHalfWidth) + (m_vUp * m_fHalfHeight);
 
 	CMeshBuilder meshBuilder;
 	IMesh* pMesh = pRenderContext->GetDynamicMesh(false);

@@ -5,7 +5,6 @@
 
 class C_PointPortal : public C_BaseEntity
 {
-public:
 	DECLARE_CLASS(C_PointPortal, C_BaseEntity);
 	DECLARE_CLIENTCLASS();
 public:
@@ -16,12 +15,14 @@ public:
 	C_PointPortal* GetPartner();
 
 	virtual void SpawnClientEntity(void);
+	virtual void Precache(void);
 
-	void DrawStencil();
+	void DrawStencil(bool fixDepth);
 
 private:
 	EHANDLE m_hPartner;
-	int m_iHalfWidth, m_iHalfHeight;
+public:
+	float m_fHalfWidth, m_fHalfHeight;
 };
 
 #endif
