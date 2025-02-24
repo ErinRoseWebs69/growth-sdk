@@ -3,4 +3,6 @@
 @PointClass base(Targetname, Angles, Origin) = point_portal : "Point Portal"
 [
     partner(target_destination) : "Partner" : : "The window which will be drawn from"
+    halfwidth(integer) : "Half Width" : 32 : "Half the width of the portal (it will extend by this distance in hammer units on the left and right of the origin)"
+    halfheight(integer) : "Half Height" : 54 : "Half the height of the portal (it will extend by this distance in hammer units on the top and the bottom of the origin)"
 ]

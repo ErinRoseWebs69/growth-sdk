@@ -21,6 +21,7 @@ public:
 
 private:
 	EHANDLE m_hPartner;
+	int m_iHalfWidth, m_iHalfHeight;
 };
 
 #endif
