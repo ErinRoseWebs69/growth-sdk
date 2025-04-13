@@ -23,14 +23,6 @@ C_PointPortal::~C_PointPortal()
 	g_pPortalRendering->Remove(this);
 }
 
-void C_PointPortal::SpawnClientEntity() 
-{
-	BaseClass::SpawnClientEntity();
-}
-
-void C_PointPortal::Precache() {
-}
-
 bool C_PointPortal::HasPartner()
 {
 	return m_hPartner;
@@ -43,8 +35,8 @@ C_PointPortal* C_PointPortal::GetPartner()
 
 void C_PointPortal::DrawStencil(bool fixDepth)
 {
-	float forwardOffset = fixDepth ? 0.0 : 0.1;
-	const IMaterial* pMaterial = materials->FindMaterial("", "", false); // literally just yoink an error texture, TODO: actually make this get a real material
+	float forwardOffset = fixDepth ? 0.2 : 0.1;
+	const IMaterial* pMaterial = fixDepth ? materials->FindMaterial("writez", "") : materials->FindMaterial("", "", false); // this material needs to exist
 	// TODO: this needs to get a material that ONLY writes depth and not color.
 	// eventually you should be able to put a mask material on this, make real looking portals
 

@@ -9,6 +9,7 @@
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+#include <view_scene.h>
 
 static ConVar r_max_stencil_recursion("r_max_stencil_recursion", "1", FCVAR_CLIENTDLL, "(BROKEN) Shows portals through portals, if it worked properly");
 static ConVar r_debug_portals("r_debug_portals", "0", FCVAR_CLIENTDLL, "Shows debug information about portals");
@@ -51,16 +52,16 @@ void PortalRendering::Render(CViewRender* view)
 			Vector uExt = myPos + myUp * (window->m_fHalfHeight - 0.1);
 			Vector dExt = myPos - myUp * (window->m_fHalfHeight - 0.1);
 
-			if (!localPlayer->IsInFieldOfView(myPos) || !localPlayer->ComputeLOS(localPlayer->EyePosition(), myPos)) { // if the center is visible then its guaranteed the portal is visible
-				if (!localPlayer->IsInFieldOfView(rExt) &&
-					!localPlayer->IsInFieldOfView(lExt) &&
-					!localPlayer->IsInFieldOfView(uExt) &&
-					!localPlayer->IsInFieldOfView(dExt)) continue; // if none of the points are even in the field of view, why bother checking if its occluded?
-				if (!localPlayer->ComputeLOS(localPlayer->EyePosition(), lExt) &&
-					!localPlayer->ComputeLOS(localPlayer->EyePosition(), rExt) &&
-					!localPlayer->ComputeLOS(localPlayer->EyePosition(), uExt) &&
-					!localPlayer->ComputeLOS(localPlayer->EyePosition(), dExt)) continue; // this is an excuse not to do a depth hack that I can't figure out how to do
-			}
+			//if (!localPlayer->IsInFieldOfView(myPos) || !localPlayer->ComputeLOS(localPlayer->EyePosition(), myPos)) { // if the center is visible then its guaranteed the portal is visible
+			//	if (!localPlayer->IsInFieldOfView(rExt) &&
+			//		!localPlayer->IsInFieldOfView(lExt) &&
+			//		!localPlayer->IsInFieldOfView(uExt) &&
+			//		!localPlayer->IsInFieldOfView(dExt)) continue; // if none of the points are even in the field of view, why bother checking if its occluded?
+			//	if (!localPlayer->ComputeLOS(localPlayer->EyePosition(), lExt) &&
+			//		!localPlayer->ComputeLOS(localPlayer->EyePosition(), rExt) &&
+			//		!localPlayer->ComputeLOS(localPlayer->EyePosition(), uExt) &&
+			//		!localPlayer->ComputeLOS(localPlayer->EyePosition(), dExt)) continue; // this is an excuse not to do a depth hack that I can't figure out how to do
+			//}
 
 			g_pStencilTool->SetStencilReferenceValue(pRenderContext, m_iRecursionLevel);
 			window->DrawStencil(false);
@@ -110,7 +111,7 @@ void PortalRendering::Render(CViewRender* view)
 			clipPlane[0] = friendFwd.x;
 			clipPlane[1] = friendFwd.y;
 			clipPlane[2] = friendFwd.z;
-			clipPlane[3] = friendFwd.Dot(window->GetPartner()->GetAbsOrigin() - (friendFwd * 0.5f));
+			clipPlane[3] = friendFwd.Dot(window->GetPartner()->GetAbsOrigin() - (friendFwd * 0.2f));
 
 			pRenderContext->PushCustomClipPlane(clipPlane);
 
@@ -134,10 +135,14 @@ void PortalRendering::Render(CViewRender* view)
 			g_pStencilTool->SetupInitialStencilRendering(pRenderContext, m_iRecursionLevel); // basically just reset everything
 			pRenderContext->SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL);
 			pRenderContext->SetStencilPassOperation(STENCILOPERATION_KEEP);
+
 			g_pStencilTool->RestoreStencilMask(pRenderContext, m_iRecursionLevel);
+
+			window->DrawStencil(true);
 
 			pRenderContext->PopCustomClipPlane();
 			m_iRecursionLevel -= 1;
+			UpdateFullScreenDepthTexture();
 		}
 		pRenderContext->Flush(true);
 		SafeRelease(pClientView);

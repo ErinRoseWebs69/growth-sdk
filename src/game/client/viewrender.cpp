@@ -4492,6 +4492,8 @@ void CRendering3dView::DrawTranslucentRenderables( bool bInSkybox, bool bShadowD
 #else
 #ifdef TF_CLIENT_DLL
 	g_pPortalRendering->Render(m_pMainView);
+
+	
 #endif
 
 	{

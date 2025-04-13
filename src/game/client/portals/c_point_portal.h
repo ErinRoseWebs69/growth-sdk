@@ -14,9 +14,6 @@ public:
 	bool HasPartner();
 	C_PointPortal* GetPartner();
 
-	virtual void SpawnClientEntity(void);
-	virtual void Precache(void);
-
 	void DrawStencil(bool fixDepth);
 
 private:

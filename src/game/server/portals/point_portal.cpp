@@ -2,6 +2,7 @@
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+#include <collisionutils.h>
 
 class CPointPortal : public CBaseEntity 
 {
@@ -18,6 +19,10 @@ public:
 	}
 
 	virtual void Activate(void);
+	virtual void Touch(CBaseEntity* other);
+	virtual void Spawn();
+
+	virtual bool TestCollision(const Ray_t& ray, unsigned int fContentsMask, trace_t& tr);
 public:
 	string_t m_sPartnerName;
 	CNetworkHandle(CPointPortal, m_hPartner);
@@ -54,4 +59,30 @@ void CPointPortal::Activate(void)
 	}
 
 	this->DispatchUpdateTransmitState();
+}
+
+void CPointPortal::Spawn() {
+	BaseClass::Spawn();
+
+	SetSolid(SOLID_OBB);
+	SetSolidFlags(FSOLID_TRIGGER | FSOLID_NOT_SOLID | FSOLID_CUSTOMBOXTEST | FSOLID_CUSTOMRAYTEST);
+
+	this->SetSize({-0.5, -this->m_fHalfWidth, -this->m_fHalfHeight }, { 0.5, this->m_fHalfWidth, this->m_fHalfHeight });
+}
+
+bool CPointPortal::TestCollision(const Ray_t& ray, unsigned int fContentsMask, trace_t& tr)
+{
+	return IntersectRayWithOBB(ray, this->EntityToWorldTransform(), { -0.5, -this->m_fHalfWidth, -this->m_fHalfHeight }, { 0.5, this->m_fHalfWidth, this->m_fHalfHeight }, 0.0f, &tr);
+}
+
+void CPointPortal::Touch(CBaseEntity* pOther)
+{
+	BaseClass::Touch(pOther);
+
+	if (CBasePlayer* player = dynamic_cast<CBasePlayer*>(pOther)) {
+		UTIL_ShowMessage("Touched!!", player);
+		CPointPortal* other = this->m_hPartner.Get();
+
+		
+	}
 }
