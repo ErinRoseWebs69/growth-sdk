@@ -1,3 +1,9 @@
+# Growth SDK
+
+Source code for the Growth SDK, forked from `https://github.com/Flopgop/source-sdk-portals`.
+
+This SDK aims to improve upon Flopgop's implementation of portals for anyone to use for their own Portal mods so that the reliance on leaked code can be diminished. 
+
 # Source SDK 2013
 
 Source code for Source SDK 2013.
